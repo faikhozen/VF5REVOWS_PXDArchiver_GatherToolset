@@ -1,5 +1,0 @@
-C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool.pdb
-C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParLibrary.pdb
-C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParLibrary.xml
-C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool.xml
-C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool.exe
