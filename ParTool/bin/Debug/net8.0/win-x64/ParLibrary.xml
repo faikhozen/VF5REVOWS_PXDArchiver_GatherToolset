@@ -1,0 +1,249 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ParLibrary</name>
+    </assembly>
+    <members>
+        <member name="T:ParLibrary.Converter.ParArchiveReader">
+            <summary>
+            Converter from BinaryFormat to ParArchive.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveReader.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Converter.ParArchiveReader"/> class.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveReader.#ctor(ParLibrary.Converter.ParArchiveReaderParameters)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Converter.ParArchiveReader"/> class.
+            </summary>
+            <param name="parameters">The parameters.</param>
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveReader.Initialize(ParLibrary.Converter.ParArchiveReaderParameters)">
+            <summary>
+            Initializes reader parameters.
+            </summary>
+            <param name="parameters">The parameters.</param>
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveReader.Convert(Yarhl.IO.BinaryFormat)">
+            <inheritdoc/>
+        </member>
+        <member name="T:ParLibrary.Converter.ParArchiveReaderParameters">
+            <summary>
+            Parameters for ParArchiveReader.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.Converter.ParArchiveReaderParameters.Recursive">
+            <summary>
+            Gets or sets a value indicating whether the reading is recursive.
+            </summary>
+        </member>
+        <member name="T:ParLibrary.Converter.ParArchiveWriter">
+            <summary>
+            Converter from PAR to BinaryFormat.
+            </summary>
+        </member>
+        <member name="T:ParLibrary.Converter.ParArchiveWriter.NodeEventHandler">
+            <summary>
+            Represents the method that handles a Node event.
+            </summary>
+            <param name="sender">The source of the event.</param>
+        </member>
+        <member name="E:ParLibrary.Converter.ParArchiveWriter.NestedParCreating">
+            <summary>
+            Occurs before the nested PAR file is created.
+            </summary>
+        </member>
+        <member name="E:ParLibrary.Converter.ParArchiveWriter.NestedParCreated">
+            <summary>
+            Occurs after the nested PAR file is created.
+            </summary>
+        </member>
+        <member name="E:ParLibrary.Converter.ParArchiveWriter.FileCompressing">
+            <summary>
+            Occurs before the file is compressed.
+            </summary>
+        </member>
+        <member name="E:ParLibrary.Converter.ParArchiveWriter.FileCompressed">
+            <summary>
+            Occurs after the file is compressed.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveWriter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Converter.ParArchiveWriter"/> class.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveWriter.#ctor(ParLibrary.Converter.ParArchiveWriterParameters)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Converter.ParArchiveWriter"/> class.
+            </summary>
+            <param name="parameters">The parameters.</param>
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveWriter.Initialize(ParLibrary.Converter.ParArchiveWriterParameters)">
+            <inheritdoc />
+        </member>
+        <member name="M:ParLibrary.Converter.ParArchiveWriter.Convert(Yarhl.FileSystem.NodeContainerFormat)">
+            <summary>
+            Converts a PAR format into binary.
+            </summary>
+            <param name="source">The par.</param>
+            <returns>The BinaryFormat.</returns>
+        </member>
+        <member name="T:ParLibrary.Converter.ParArchiveWriterParameters">
+            <summary>
+            Parameters for ParArchiveWriter.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.Converter.ParArchiveWriterParameters.CompressorVersion">
+            <summary>
+            Gets or sets the compressor version to use.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.Converter.ParArchiveWriterParameters.OutputPath">
+            <summary>
+            Gets or sets the path to write.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.Converter.ParArchiveWriterParameters.IncludeDots">
+            <summary>
+            Gets or sets a value indicating whether "." nodes are needed.
+            </summary>
+        </member>
+        <member name="T:ParLibrary.ParFile">
+            <summary>
+            Represents a file stored in a PAR archive.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.ParFile.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.ParFile"/> class.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.ParFile.#ctor(Yarhl.IO.DataStream)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.ParFile"/> class.
+            </summary>
+            <param name="stream">The data stream.</param>
+        </member>
+        <member name="M:ParLibrary.ParFile.#ctor(Yarhl.IO.DataStream,System.Int64,System.Int64)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.ParFile"/> class.
+            </summary>
+            <param name="stream">The base stream.</param>
+            <param name="offset">Start offset.</param>
+            <param name="length">Data length.</param>
+        </member>
+        <member name="P:ParLibrary.ParFile.CanBeCompressed">
+            <summary>
+            Gets or sets a value indicating whether the file can be compressed.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.ParFile.IsCompressed">
+            <summary>
+            Gets or sets a value indicating whether the file is compressed.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.ParFile.DecompressedSize">
+            <summary>
+            Gets or sets the file size (decompressed).
+            </summary>
+        </member>
+        <member name="P:ParLibrary.ParFile.Attributes">
+            <summary>
+            Gets or sets the file attributes.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.ParFile.Timestamp">
+            <summary>
+            Gets or sets the file date (as ulong).
+            </summary>
+        </member>
+        <member name="P:ParLibrary.ParFile.FileDate">
+            <summary>
+            Gets or sets the file date (as DateTime).
+            </summary>
+        </member>
+        <member name="M:ParLibrary.ParFile.Convert(Yarhl.IO.BinaryFormat)">
+            <inheritdoc/>
+        </member>
+        <member name="T:ParLibrary.Sllz.Compressor">
+            <summary>
+            Manages SLLZ compression used in Yakuza games.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Sllz.Compressor.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Sllz.Compressor"/> class.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Sllz.Compressor.#ctor(ParLibrary.Sllz.CompressorParameters)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Sllz.Compressor"/> class.
+            </summary>
+            <param name="parameters">Compressor configuration.</param>
+        </member>
+        <member name="M:ParLibrary.Sllz.Compressor.Initialize(ParLibrary.Sllz.CompressorParameters)">
+            <summary>
+            Initializes the compressor parameters.
+            </summary>
+            <param name="parameters">Compressor configuration.</param>
+        </member>
+        <member name="M:ParLibrary.Sllz.Compressor.Convert(ParLibrary.ParFile)">
+            <summary>Compresses a file with SLLZ.</summary>
+            <returns>The compressed file.</returns>
+            <param name="source">Source file to compress.</param>
+        </member>
+        <member name="T:ParLibrary.Sllz.CompressorParameters">
+            <summary>
+            Parameters for SLLZ compressor.
+            </summary>
+        </member>
+        <member name="P:ParLibrary.Sllz.CompressorParameters.Version">
+            <summary>
+            Gets or sets the compression algorithm version.
+            </summary>
+            <remarks><para>Valid values are 1 or 2.</para></remarks>
+        </member>
+        <member name="P:ParLibrary.Sllz.CompressorParameters.Endianness">
+            <summary>
+            Gets or sets the compression algorithm endianness.
+            </summary>
+            <remarks><para>Valid values are 0 (Little Endian) or 1 (Big Endian).</para></remarks>
+        </member>
+        <member name="T:ParLibrary.Sllz.Decompressor">
+            <summary>
+            Manages SLLZ compression used in Yakuza games.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Sllz.Decompressor.Convert(ParLibrary.ParFile)">
+            <summary>Decompresses a SLLZ file.</summary>
+            <returns>The decompressed file.</returns>
+            <param name="source">Source file to decompress.</param>
+        </member>
+        <member name="T:ParLibrary.Sllz.SllzCompressorException">
+            <summary>
+            SLLZ compression exception.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Sllz.SllzCompressorException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Sllz.SllzCompressorException"/> class.
+            </summary>
+        </member>
+        <member name="M:ParLibrary.Sllz.SllzCompressorException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Sllz.SllzCompressorException"/> class.
+            </summary>
+            <param name="message">Exception message.</param>
+        </member>
+        <member name="M:ParLibrary.Sllz.SllzCompressorException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ParLibrary.Sllz.SllzCompressorException"/> class.
+            </summary>
+            <param name="message">Exception message.</param>
+            <param name="innerException">Inner exception.</param>
+        </member>
+    </members>
+</doc>

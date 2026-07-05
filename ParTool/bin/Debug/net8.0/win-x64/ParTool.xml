@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ParTool</name>
+    </assembly>
+    <members>
+        <member name="T:ParTool.Options.Add">
+            <summary>
+            PAR archive extract options.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Add.InputParArchivePath">
+            <summary>
+            Gets or sets the input directory.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Add.AddDirectory">
+            <summary>
+            Gets or sets the path where the new files are located.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Add.OutputParArchivePath">
+            <summary>
+            Gets or sets the PAR archive path.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Add.Compression">
+            <summary>
+            Gets or sets the compression algorithm to use.
+            </summary>
+        </member>
+        <member name="T:ParTool.Options.Create">
+            <summary>
+            PAR archive extract options.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Create.InputDirectory">
+            <summary>
+            Gets or sets the input directory.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Create.ParArchivePath">
+            <summary>
+            Gets or sets the PAR archive path.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Create.AlternativeMode">
+            <summary>
+            Gets or sets a value indicating whether the output file will be used in a Yakuza Kenzan, Yakuza 3, 4 or 5.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Create.Compression">
+            <summary>
+            Gets or sets the compression algorithm to use.
+            </summary>
+        </member>
+        <member name="T:ParTool.Options.Extract">
+            <summary>
+            PAR archive extract options.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Extract.ParArchivePath">
+            <summary>
+            Gets or sets the PAR archive path.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Extract.OutputDirectory">
+            <summary>
+            Gets or sets the output directory.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Extract.Recursive">
+            <summary>
+            Gets or sets a value indicating whether the extraction is recursive.
+            </summary>
+        </member>
+        <member name="T:ParTool.Options.GatherCompile">
+            <summary>
+            PAR archive gather and compile options.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.GatherCompile.InputParArchivePath">
+            <summary>
+            Gets or sets the input PAR archive path.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.GatherCompile.ModsDirectory">
+            <summary>
+            Gets or sets the mods directory path.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.GatherCompile.OutputParArchivePath">
+            <summary>
+            Gets or sets the final output PAR archive path.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.GatherCompile.Compression">
+            <summary>
+            Gets or sets the compression algorithm to use.
+            </summary>
+        </member>
+        <member name="T:ParTool.Options.List">
+            <summary>
+            PAR archive list options.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.List.ParArchivePath">
+            <summary>
+            Gets or sets the PAR archive path.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.List.Recursive">
+            <summary>
+            Gets or sets a value indicating whether the list is recursive.
+            </summary>
+        </member>
+        <member name="T:ParTool.Options.Remove">
+            <summary>
+            PAR archive extract options.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Remove.InputParArchivePath">
+            <summary>
+            Gets or sets the input directory.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Remove.RemovePath">
+            <summary>
+            Gets or sets the files to remove.
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.Remove.OutputParArchivePath">
+            <summary>
+            Gets or sets the PAR archive path.
+            </summary>
+        </member>
+        <member name="T:ParTool.Program">
+            <summary>
+            Node adding functionality.
+            </summary>
+            <summary>
+            Create contents functionality.
+            </summary>
+            <summary>
+            Main program.
+            </summary>
+            <summary>
+            Extract contents functionality.
+            </summary>
+            <summary>
+            Gather and Compile functionality.
+            </summary>
+            <summary>
+            List contents functionality.
+            </summary>
+            <summary>
+            Node removal functionality.
+            </summary>
+        </member>
+    </members>
+</doc>
