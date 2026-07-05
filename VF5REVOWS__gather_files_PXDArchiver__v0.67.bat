@@ -34,7 +34,9 @@ if exist "%ALL_DIR%" (
 REM Recreate the necessary directory structure
 mkdir "%ALL_DIR%\chara\bone" 2>nul
 mkdir "%ALL_DIR%\chara\dds" 2>nul
+mkdir "%ALL_DIR%\chara\dds_append" 2>nul
 mkdir "%ALL_DIR%\chara\tops" 2>nul
+mkdir "%ALL_DIR%\chara\vf5item" 2>nul
 
 REM Create temp files for tracking
 set "CONFLICT_LOG=%SCRIPT_DIR%gmd_conflicts.txt"
@@ -59,6 +61,55 @@ for /d %%D in ("%SOURCE_DIR%\*") do (
         )
         if exist "%%D\chara\dds\*" (
             copy /y "%%D\chara\dds\*.*" "%ALL_DIR%\chara\dds\" >nul
+        )
+        if exist "%%D\chara\dds_append\*" (
+            copy /y "%%D\chara\dds_append\*.*" "%ALL_DIR%\chara\dds_append\" >nul
+        )
+        if exist "%%D\chara\vf5item\*" (
+            REM Copy the entire vf5item subdirectory tree
+            xcopy /E /Y /Q "%%D\chara\vf5item\*" "%ALL_DIR%\chara\vf5item\" >nul 2>&1
+            
+            REM Check for .gmd files directly in chara\vf5item folder
+            for %%G in ("%%D\chara\vf5item\*.gmd") do (
+                if exist "%%G" (
+                    set "HAS_GMD_FILES=1"
+                    set "REL_PATH=%%G"
+                    set "REL_PATH=!REL_PATH:%%D\chara\vf5item\=!"
+                    set "REL_PATH_FWD=!REL_PATH:\=/!"
+                    echo Gathering from: %%~nxD ^|^| /vf5item/!REL_PATH_FWD!
+                    echo /vf5item/!REL_PATH_FWD!-%%~nxD >> "%GMD_HISTORY%"
+                )
+            )
+            REM Check for .gmd files in immediate subdirectories (chara\vf5item\<CHAR_ID>)
+            for /d %%C in ("%%D\chara\vf5item\*") do (
+                if exist "%%C\" (
+                    for %%G in ("%%C\*.gmd") do (
+                        if exist "%%G" (
+                            set "HAS_GMD_FILES=1"
+                            set "REL_PATH=%%G"
+                            set "REL_PATH=!REL_PATH:%%D\chara\vf5item\=!"
+                            set "REL_PATH_FWD=!REL_PATH:\=/!"
+                            echo Gathering from: %%~nxD ^|^| /vf5item/!REL_PATH_FWD!
+                            echo /vf5item/!REL_PATH_FWD!-%%~nxD >> "%GMD_HISTORY%"
+                        )
+                    )
+                    REM Check for .gmd files in nested subdirectories (chara\vf5item\<CHAR_ID>\<ITEM_ID>)
+                    for /d %%I in ("%%C\*") do (
+                        if exist "%%I\" (
+                            for %%G in ("%%I\*.gmd") do (
+                                if exist "%%G" (
+                                    set "HAS_GMD_FILES=1"
+                                    set "REL_PATH=%%G"
+                                    set "REL_PATH=!REL_PATH:%%D\chara\vf5item\=!"
+                                    set "REL_PATH_FWD=!REL_PATH:\=/!"
+                                    echo Gathering from: %%~nxD ^|^| /vf5item/!REL_PATH_FWD!
+                                    echo /vf5item/!REL_PATH_FWD!-%%~nxD >> "%GMD_HISTORY%"
+                                )
+                            )
+                        )
+                    )
+                )
+            )
         )
 
         REM Only copy subfolders inside chara\tops
