@@ -8,7 +8,7 @@
       "version": "1.0.0",
       "restore": {
         "projectUniqueName": "C:\\Users\\casan\\Documents\\github\\VF5REVOWS_PXDArchiver_GatherToolset\\ParTool\\ParTool.csproj",
-        "projectName": "ParTool",
+        "projectName": "VF5REVOWS_mod_compiler",
         "projectPath": "C:\\Users\\casan\\Documents\\github\\VF5REVOWS_PXDArchiver_GatherToolset\\ParTool\\ParTool.csproj",
         "packagesPath": "C:\\Users\\casan\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\casan\\Documents\\github\\VF5REVOWS_PXDArchiver_GatherToolset\\ParTool\\obj\\",
@@ -161,12 +161,6 @@
             "Ionic.Zlib.Core": {
               "target": "Package",
               "version": "[1.0.0, )"
-            },
-            "Microsoft.NET.ILLink.Tasks": {
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[8.0.12, )",
-              "autoReferenced": true
             },
             "System.Memory": {
               "target": "Package",

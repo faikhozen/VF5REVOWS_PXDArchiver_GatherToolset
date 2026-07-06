@@ -1,0 +1,5 @@
+C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool\bin\Release\net8.0\win-x64\publish\VF5REVOWS_mod_compiler.pdb
+C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool\bin\Release\net8.0\win-x64\publish\ParLibrary.pdb
+C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool\bin\Release\net8.0\win-x64\publish\ParLibrary.xml
+C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool\bin\Release\net8.0\win-x64\publish\VF5REVOWS_mod_compiler.xml
+C:\Users\casan\Documents\github\VF5REVOWS_PXDArchiver_GatherToolset\ParTool\bin\Release\net8.0\win-x64\publish\VF5REVOWS_mod_compiler.exe

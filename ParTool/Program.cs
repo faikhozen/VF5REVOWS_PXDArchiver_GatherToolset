@@ -16,6 +16,12 @@ namespace ParTool
     {
         private static void Main(string[] args)
         {
+            if (args.Length == 0)
+            {
+                RunInteractiveCompile();
+                return;
+            }
+
             using var parser = new Parser(with => with.HelpWriter = null);
             ParserResult<object> parserResult = parser.ParseArguments<Options.List, Options.Extract, Options.Create, Options.Remove, Options.Add, Options.GatherCompile>(args);
             parserResult
