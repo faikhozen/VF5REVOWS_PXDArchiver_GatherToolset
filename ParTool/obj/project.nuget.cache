@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "dgSpecHash": "fq7vIYbaOFc=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\casan\\Documents\\github\\VF5REVOWS_PXDArchiver_GatherToolset\\ParTool\\ParTool.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\casan\\.nuget\\packages\\commandlineparser\\2.6.0\\commandlineparser.2.6.0.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\ionic.zlib.core\\1.0.0\\ionic.zlib.core.1.0.0.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\microsoft.io.recyclablememorystream\\3.0.0\\microsoft.io.recyclablememorystream.3.0.0.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.12\\microsoft.net.illink.tasks.8.0.12.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\system.text.encoding.codepages\\8.0.0\\system.text.encoding.codepages.8.0.0.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\yarhl\\4.0.0\\yarhl.4.0.0.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.12\\microsoft.netcore.app.runtime.win-x64.8.0.12.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.12\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.12.nupkg.sha512",
+    "C:\\Users\\casan\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.12\\microsoft.aspnetcore.app.runtime.win-x64.8.0.12.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,3 @@
+[submodule "pxdArchiver"]
+	path = pxdArchiver
+	url = https://github.com/Ret-HZ/pxdArchiverCE.git
