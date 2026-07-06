@@ -265,52 +265,62 @@ namespace ParTool
                 IncludeDots = false,
             };
 
-            Console.WriteLine("Step 2/2: Merging files into PAR archive (in-memory/stream overlay)...");
-            Console.Write("Reading PAR file... ");
-            Node par = NodeFactory.FromFile(backupPath, Yarhl.IO.FileOpenMode.Read);
-            par.TransformWith(new ParArchiveReader(readerParameters));
-            Console.WriteLine("DONE!");
+            Node par = null;
+            Node node = null;
 
-            Console.Write("Building virtual mod overlay... ");
-            Node node = Yarhl.FileSystem.NodeFactory.CreateContainer("mods_overlay");
-            foreach (var overlay in filesToOverlay)
+            try
             {
-                AddFileToVirtualNode(node, overlay.PhysicalPath, overlay.VirtualPath);
-            }
-            Console.WriteLine("DONE!");
+                Console.WriteLine("Step 2/2: Merging files into PAR archive (in-memory/stream overlay)...");
+                Console.Write("Reading PAR file... ");
+                par = NodeFactory.FromFile(backupPath, Yarhl.IO.FileOpenMode.Read);
+                par.TransformWith(new ParArchiveReader(readerParameters));
+                Console.WriteLine("DONE!");
 
-            Console.Write("Adding files... ");
-            Node destinationNode = FindDestinationNode(par);
-            node.GetFormatAs<NodeContainerFormat>().MoveChildrenTo(destinationNode, true);
+                Console.Write("Building virtual mod overlay... ");
+                node = Yarhl.FileSystem.NodeFactory.CreateContainer("mods_overlay");
+                foreach (var overlay in filesToOverlay)
+                {
+                    AddFileToVirtualNode(node, overlay.PhysicalPath, overlay.VirtualPath);
+                }
+                Console.WriteLine("DONE!");
+
+                Console.Write("Adding files... ");
+                Node destinationNode = FindDestinationNode(par);
+                node.GetFormatAs<NodeContainerFormat>().MoveChildrenTo(destinationNode, true);
 #pragma warning disable CA1308 // Normalize strings to uppercase
-            destinationNode.SortChildren((x, y) => string.CompareOrdinal(x.Name.ToLowerInvariant(), y.Name.ToLowerInvariant()));
+                destinationNode.SortChildren((x, y) => string.CompareOrdinal(x.Name.ToLowerInvariant(), y.Name.ToLowerInvariant()));
 #pragma warning restore CA1308 // Normalize strings to uppercase
-            Console.WriteLine("DONE!");
+                Console.WriteLine("DONE!");
 
-            // Setup static variables for progress bar
-            totalFilesToCompress = CountFiles(par);
-            compressedFilesCount = 0;
+                // Setup static variables for progress bar
+                totalFilesToCompress = CountFiles(par);
+                compressedFilesCount = 0;
 
-            ParArchiveWriter.NestedParCreating += sender => Console.WriteLine($"\nCreating nested PAR {sender.Name}... ");
-            ParArchiveWriter.NestedParCreated += sender => Console.WriteLine($"{sender.Name} created!");
-            ParArchiveWriter.FileCompressing += OnFileCompressing;
+                ParArchiveWriter.NestedParCreating += sender => Console.WriteLine($"\nCreating nested PAR {sender.Name}... ");
+                ParArchiveWriter.NestedParCreated += sender => Console.WriteLine($"{sender.Name} created!");
+                ParArchiveWriter.FileCompressing += OnFileCompressing;
 
-            Console.WriteLine("Creating PAR (this may take a while)... ");
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPar));
+                Console.WriteLine("Creating PAR (this may take a while)... ");
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPar));
 
-            // Draw initial progress bar
-            DrawProgressBar(0, totalFilesToCompress);
+                // Draw initial progress bar
+                DrawProgressBar(0, totalFilesToCompress);
 
-            par.TransformWith(new ParArchiveWriter(writerParameters));
+                par.TransformWith(new ParArchiveWriter(writerParameters));
 
-            // Force 100% completion bar draw at the end
-            DrawProgressBar(totalFilesToCompress, totalFilesToCompress);
-            Console.WriteLine();
-
-            // Unhook event handlers
-            ParArchiveWriter.FileCompressing -= OnFileCompressing;
-            par.Dispose();
-            node.Dispose();
+                // Force 100% completion bar draw at the end
+                DrawProgressBar(totalFilesToCompress, totalFilesToCompress);
+                Console.WriteLine();
+            }
+            finally
+            {
+                // Unhook event handlers
+                ParArchiveWriter.FileCompressing -= OnFileCompressing;
+                
+                // Release the lock on the reference PAR file
+                par?.Dispose();
+                node?.Dispose();
+            }
 
             Console.WriteLine("DONE!\n");
 
@@ -357,7 +367,7 @@ namespace ParTool
 
             Console.WriteLine("PREREQUISITES:");
             Console.WriteLine(" - The './mods' folder must exist in the same folder as this program.");
-            Console.WriteLine(" - An original 'chara.par' file is required as a reference.");
+            Console.WriteLine(" - An original 'chara.par' reference file is required (you can also select backups like 'chara_backup.par', 'chara_original.par', or 'chara__bak.par').");
             Console.WriteLine();
             Console.WriteLine("GAME DIRECTORY REFERENCE:");
             Console.WriteLine(" - VFREVO.exe is usually located at:");
@@ -366,7 +376,7 @@ namespace ParTool
             Console.WriteLine(@"     {steam_directory}\steamapps\common\VFREVO\runtime\media\data\chara.par");
             Console.WriteLine();
             Console.WriteLine("--------------------------------------------------------------------------------");
-            Console.Write("Press any key to select your original 'chara.par' file...");
+            Console.Write("Press any key to select your reference 'chara.par' (original or backup) file...");
             Console.ReadKey(true);
             Console.WriteLine("\n");
 
