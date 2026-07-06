@@ -1,27 +1,52 @@
-# VF5Revo World Stage Mod Gatherer (v0.67)
+# VF5Revo World Stage Mod Compiler (v1.0)
 
-**Developed by:** Fai Khozen
+**Developed by:** Fai Khozen  
+**GitHub Repository:** [faikhozen/VF5REVOWS_PXDArchiver_GatherToolset](https://github.com/faikhozen/VF5REVOWS_PXDArchiver_GatherToolset)
+
+---
 
 ## Description
-A lightweight utility tool designed to compile and organize **VF5Revo World Stage** mods into a clean, easy-to-use draggable format specifically tailored for **PXDArchiver**. 
+A high-performance C# utility tool designed to compile, merge, and organize **VF5Revo World Stage** mods directly into your game's `chara.par` archive. 
+
+This updated compiler operates **completely in-memory**, eliminating the need for extracting archives to disk or copying files to a temporary `__all` directory. It overlays your mods on top of the original archive in a single pass, resulting in a **3.2x speedup** and saving gigabytes of SSD write wear.
 
 > ⚠️ **Important Requirement:** This tool is strictly compatible **only** with the **StandAlone DLC costume** format.
 
-## Features
-* **Conflict Detection:** Includes a dedicated PowerShell script to check for `.gmd` file conflicts, preventing overlapping mod IDs from crashing your game.
-* **Draggable Format:** No manual sorting required—just drag, drop, and archive.
+---
+
+## Key Features
+* 🚀 **In-Memory Compilation**: Compiles your modded `chara.par` archive in a single pass without copying files to the disk. Merges 5,000+ files in under 2 minutes!
+* 🖥️ **Guided Interactive Mode**: Double-clicking the executable launches an interactive wizard that lets you pick your game's `chara.par` using a standard Windows file-picker dialog.
+* 💾 **Disk Space Optimization**: The tool automatically checks your drive space. If at least 15 GB is free, it copies the PAR locally next to the compiler for maximum SSD read/write speeds, then automatically cleans it up when finished.
+* 📊 **Visual Completion Bar**: Displays a real-time, in-place progress bar during compilation:
+  `Progress: [██████████████████░░░░░░░░░░░░] 60% (11124/18546)`
+* 🔍 **Built-in GMD Conflict Detection**: Scans and compares all mod files recursively. If multiple mods are trying to overwrite the same StandAlone DLC slots, the tool prints a color-coded warning table showing which mod currently holds priority.
+* 📁 **Correct Nesting Structure**: Resolves the original archive's nested dot directories (`/./` and `/././`) automatically, ensuring modded slots overwrite the correct target files so that the game registers them successfully.
+
+---
 
 ## Files Included
-* `VF5REVOWS__gather_files_PXDArchiver__v0.67.bat` — The main batch script that handles file compilation and structuring.
-* `check_gmd_conflicts.ps1` — A helper script that scans your mods to ensure there are no duplicate/conflicting model data files.
+* `VF5REVOWS_mod_compiler.exe` — The main compiled executable. Can be double-clicked for a guided compile, or run from the CLI.
+* `compile_mods_directly.bat` — A quick batch script shortcut to run the compiler on `chara_bak.par`.
+
+---
 
 ## How to Use
-📺 **Video Guide:** For an easy visual explanation on how to use this tool, please refer to this tutorial: **[YouTube Video Guide](https://youtu.be/A0wgoF7rPgk)**
 
-1. **Setup Directory:** Ensure you have a `mods` folder located in the same directory as the script. Place your StandAlone DLC mods inside this `mods` folder.
-2. **Run the Script:** Double-click `VF5REVOWS__gather_files_PXDArchiver__v0.67.bat` to begin the compilation process.
-3. **Review Output & Conflicts:** The tool will gather the files into an `__all` directory and automatically run the conflict checker to ensure your StandAlone DLC slots aren't overwriting each other.
-4. **Archive:** Once finished, refer to the video https://youtu.be/A0wgoF7rPgk on how to use it with PXDArchiver in mind
+### Guided Interactive Mode (Recommended)
+1. **Setup Folder**: Ensure `VF5REVOWS_mod_compiler.exe` is placed in a folder of your choice.
+2. **Add Mods**: Place your StandAlone DLC mod folders inside the `./mods` directory next to the executable (the tool will create this folder for you on first launch if it's missing).
+3. **Run the Compiler**: Double-click `VF5REVOWS_mod_compiler.exe`.
+4. **Select chara.par**: When prompted, press any key. A Windows file-picker dialog will open. Navigate to your Steam installation directory and select the original `chara.par` file:
+   `{Steam_directory}\steamapps\common\VFREVO\runtime\media\data\chara.par`
+5. **Compile**: The tool will scan your mods, report any slot conflicts, and merge your files.
+6. **Deploy**:
+   * Back up your original `chara.par` in your Steam folder (e.g. rename it to `chara_original.par`).
+   * Copy the newly compiled `chara.par` from the compiler's `./output/chara.par` folder directly into your Steam game data folder:
+     `{Steam_directory}\steamapps\common\VFREVO\runtime\media\data\`
 
-## Limitations
-* **StandAlone DLC Only:** Does not support standard model replacements or loose texture overwrites unless they are properly structured within a StandAlone DLC layout.
+---
+
+## Troubleshooting & Tips
+* **Fast Compilation**: SLLZ compression is disabled by default (`--compression 0`) to compile your PAR files in seconds. Uncompressed archives are fully supported by the game. If you wish to save disk space and use SLLZ compression, you can compile via the CLI or edit the batch file to pass `--compression 1` (note: this will take several minutes to run).
+* **Game Crashes / Mods Overlapping**: If your mods overlap, check the **GMD CONFLICTS DETECTED** table in the console output. It lists which mods are trying to use the same slot and tells you which mod is currently taking priority.
