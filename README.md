@@ -50,3 +50,9 @@ This updated compiler operates **completely in-memory**, eliminating the need fo
 ## Troubleshooting & Tips
 * **Fast Compilation**: SLLZ compression is disabled by default (`--compression 0`) to compile your PAR files in seconds. Uncompressed archives are fully supported by the game. If you wish to save disk space and use SLLZ compression, you can compile via the CLI or edit the batch file to pass `--compression 1` (note: this will take several minutes to run).
 * **Game Crashes / Mods Overlapping**: If your mods overlap, check the **GMD CONFLICTS DETECTED** table in the console output. It lists which mods are trying to use the same slot and tells you which mod is currently taking priority.
+
+---
+
+## Credits & Attributions
+* This project uses code and libraries from the [Ret-HZ/pxdArchiverCE](https://github.com/Ret-HZ/pxdArchiverCE) project.
+
