@@ -37,7 +37,7 @@ This updated compiler operates **completely in-memory**, eliminating the need fo
 1. **Setup Folder**: Ensure `VF5REVOWS_mod_compiler.exe` is placed in a folder of your choice.
 2. **Add Mods**: Place your StandAlone DLC mod folders inside the `./mods` directory next to the executable (the tool will create this folder for you on first launch if it's missing).
 3. **Run the Compiler**: Double-click `VF5REVOWS_mod_compiler.exe`.
-4. **Select chara.par**: When prompted, press any key. A Windows file-picker dialog will open. Navigate to your Steam installation directory and select the original `chara.par` file:
+4. **Select chara.par**: When prompted, press any key. A Windows file-picker dialog will open. Navigate to your Steam installation directory and select the reference `chara.par` file (you can also select backups like `chara_backup.par`, `chara_original.par`, or `chara__bak.par`):
    `{Steam_directory}\steamapps\common\VFREVO\runtime\media\data\chara.par`
 5. **Compile**: The tool will scan your mods, report any slot conflicts, and merge your files.
 6. **Deploy**:
