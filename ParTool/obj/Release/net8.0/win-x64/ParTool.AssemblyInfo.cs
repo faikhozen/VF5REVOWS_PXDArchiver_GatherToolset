@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VF5REVOWS_mod_compiler")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+82d71c427444052695ea646e29c31a6b0233bc0f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9521365323f447c732a09e34636fa99a682709e3")]
 [assembly: System.Reflection.AssemblyProductAttribute("VF5REVOWS_mod_compiler")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VF5REVOWS_mod_compiler")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

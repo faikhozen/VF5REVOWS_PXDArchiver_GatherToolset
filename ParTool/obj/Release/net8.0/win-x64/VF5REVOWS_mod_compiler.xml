@@ -99,6 +99,11 @@
             Gets or sets the compression algorithm to use.
             </summary>
         </member>
+        <member name="P:ParTool.Options.GatherCompile.IsSoundMod">
+            <summary>
+            Gets or sets a value indicating whether to compile as a sound mod (vf5fs_data.par) instead of character mods.
+            </summary>
+        </member>
         <member name="T:ParTool.Options.List">
             <summary>
             PAR archive list options.

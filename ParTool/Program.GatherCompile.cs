@@ -119,6 +119,9 @@ namespace ParTool
             var filesToOverlay = new List<(string PhysicalPath, string VirtualPath)>();
             var gmdHistory = new Dictionary<string, List<GmdEntry>>(StringComparer.OrdinalIgnoreCase);
 
+            int authVoiceFilesCopied = 0;
+            string outputDir = Path.GetDirectoryName(outputPar) ?? string.Empty;
+
             // 5. Scan mods folders
             string[] subDirs = Directory.GetDirectories(modsDir);
             foreach (string modPath in subDirs)
@@ -130,6 +133,44 @@ namespace ParTool
                 }
 
                 bool hasGmdFiles = false;
+
+                if (opts.IsSoundMod)
+                {
+                    string romSrc = Path.Combine(modPath, "rom");
+                    if (Directory.Exists(romSrc))
+                    {
+                        int copiedCount = 0;
+                        foreach (string file in Directory.GetFiles(romSrc, "*", SearchOption.AllDirectories))
+                        {
+                            string relPath = file.Substring(romSrc.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                            string normRelPath = relPath.Replace('\\', '/');
+
+                            if (normRelPath.StartsWith("sound/voice/auth_voice/", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string fileName = Path.GetFileName(file);
+                                string destFolder = Path.Combine(outputDir, "auth_voice");
+                                Directory.CreateDirectory(destFolder);
+                                File.Copy(file, Path.Combine(destFolder, fileName), true);
+                                copiedCount++;
+                                authVoiceFilesCopied++;
+                            }
+                            else
+                            {
+                                filesToOverlay.Add((file, $"rom/{normRelPath}"));
+                            }
+                        }
+                        if (copiedCount > 0)
+                        {
+                            Console.WriteLine($"Gathering from: {modName} ({copiedCount} auth_voice files copied to output)");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Gathering from: {modName}");
+                        }
+                    }
+                    continue; // Skip the chara mod logic
+                }
+
 
                 // 1. bone
                 string boneSrc = Path.Combine(modPath, "chara", "bone");
@@ -231,8 +272,6 @@ namespace ParTool
             CheckConflicts(gmdHistory);
             Console.WriteLine($"Scanning complete. Found {filesToOverlay.Count} files to overlay directly into PAR.\n");
 
-            // 7. Perform compiling & merging (in-memory overlay)
-            string outputDir = Path.GetDirectoryName(outputPar);
             if (!string.IsNullOrEmpty(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
@@ -255,7 +294,7 @@ namespace ParTool
 
             var readerParameters = new ParArchiveReaderParameters
             {
-                Recursive = true,
+                Recursive = false,
             };
 
             var writerParameters = new ParArchiveWriterParameters
@@ -276,17 +315,13 @@ namespace ParTool
                 par.TransformWith(new ParArchiveReader(readerParameters));
                 Console.WriteLine("DONE!");
 
-                Console.Write("Building virtual mod overlay... ");
-                node = Yarhl.FileSystem.NodeFactory.CreateContainer("mods_overlay");
+                Console.Write("Adding files directly to destination node... ");
+                Node destinationNode = FindDestinationNode(par);
                 foreach (var overlay in filesToOverlay)
                 {
-                    AddFileToVirtualNode(node, overlay.PhysicalPath, overlay.VirtualPath);
+                    AddFileToVirtualNode(destinationNode, overlay.PhysicalPath, overlay.VirtualPath);
                 }
-                Console.WriteLine("DONE!");
 
-                Console.Write("Adding files... ");
-                Node destinationNode = FindDestinationNode(par);
-                node.GetFormatAs<NodeContainerFormat>().MoveChildrenTo(destinationNode, true);
 #pragma warning disable CA1308 // Normalize strings to uppercase
                 destinationNode.SortChildren((x, y) => string.CompareOrdinal(x.Name.ToLowerInvariant(), y.Name.ToLowerInvariant()));
 #pragma warning restore CA1308 // Normalize strings to uppercase
@@ -329,6 +364,26 @@ namespace ParTool
             Console.WriteLine($"SUCCESS: New PAR archive compiled successfully at:\n  {outputPar}");
             Console.WriteLine("================================================================================");
             Console.ResetColor();
+
+            if (opts.IsSoundMod && authVoiceFilesCopied > 0)
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("=================== [IMPORTANT INSTRUCTIONS FOR AUTH_VOICE] ===================");
+                Console.WriteLine("Some sound mod files were copied to the local output folder instead of the PAR:");
+                Console.WriteLine($" -> {Path.Combine(outputDir, "auth_voice")}");
+                Console.WriteLine();
+                Console.WriteLine("Please follow these steps to apply them to your game:");
+                Console.WriteLine("1. Create a BACKUP copy of your original 'auth_voice' folder located at:");
+                Console.WriteLine(@"   \steamapps\common\VFREVO\runtime\media\vf5fs\vf5fs_media\rom\sound\voice\auth_voice");
+                Console.WriteLine("2. Copy all the files from the newly created folder:");
+                Console.WriteLine($"   {Path.Combine(outputDir, "auth_voice")}");
+                Console.WriteLine("3. Paste and overwrite them into the game's folder:");
+                Console.WriteLine(@"   \steamapps\common\VFREVO\runtime\media\vf5fs\vf5fs_media\rom\sound\voice\auth_voice");
+                Console.WriteLine("================================================================================");
+                Console.ResetColor();
+                Console.WriteLine();
+            }
         }
 
         private static void RunInteractiveCompile()
@@ -365,26 +420,45 @@ namespace ParTool
                 }
             }
 
-            Console.WriteLine("PREREQUISITES:");
+            Console.WriteLine("Select mod type to compile:");
+            Console.WriteLine("1. Character Skin mods (chara.par)");
+            Console.WriteLine("2. Sound mods (vf5fs_data.par)");
+            Console.Write("Choice [1/2]: ");
+            string choice = Console.ReadLine()?.Trim();
+            bool isSoundMod = choice == "2";
+            
+            string expectedParName = isSoundMod ? "vf5fs_data.par" : "chara.par";
+            string tempCopyName = isSoundMod ? "temp_vf5fs_data_copy.par" : "temp_chara_copy.par";
+            string initialDir = isSoundMod ? @"\steamapps\common\VFREVO\runtime\media\vf5fs" : "";
+
+            Console.WriteLine("\nPREREQUISITES:");
             Console.WriteLine(" - The './mods' folder must exist in the same folder as this program.");
-            Console.WriteLine(" - An original 'chara.par' reference file is required (you can also select backups like 'chara_backup.par', 'chara_original.par', or 'chara__bak.par').");
+            Console.WriteLine($" - An original '{expectedParName}' reference file is required.");
             Console.WriteLine();
             Console.WriteLine("GAME DIRECTORY REFERENCE:");
             Console.WriteLine(" - VFREVO.exe is usually located at:");
             Console.WriteLine(@"     {steam_directory}\steamapps\common\VFREVO\runtime\media\VFREVO.exe");
-            Console.WriteLine(" - The original chara.par is located inside:");
-            Console.WriteLine(@"     {steam_directory}\steamapps\common\VFREVO\runtime\media\data\chara.par");
+            if (isSoundMod)
+            {
+                Console.WriteLine($" - The original {expectedParName} is located inside:");
+                Console.WriteLine(@"     {steam_directory}\steamapps\common\VFREVO\runtime\media\vf5fs\vf5fs_data.par");
+            }
+            else
+            {
+                Console.WriteLine($" - The original {expectedParName} is located inside:");
+                Console.WriteLine(@"     {steam_directory}\steamapps\common\VFREVO\runtime\media\data\chara.par");
+            }
             Console.WriteLine();
             Console.WriteLine("--------------------------------------------------------------------------------");
-            Console.Write("Press any key to select your reference 'chara.par' (original or backup) file...");
+            Console.Write($"Press any key to select your reference '{expectedParName}' file...");
             Console.ReadKey(true);
             Console.WriteLine("\n");
 
-            string selectedParPath = SelectCharaPar();
+            string selectedParPath = SelectPar(expectedParName, initialDir);
             if (string.IsNullOrEmpty(selectedParPath) || !File.Exists(selectedParPath))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERROR: No valid 'chara.par' file was selected.");
+                Console.WriteLine($"ERROR: No valid '{expectedParName}' file was selected.");
                 Console.ResetColor();
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey(true);
@@ -396,7 +470,7 @@ namespace ParTool
             // Compute free space and copy locally if we have >= 15GB
             string parInputPath = selectedParPath;
             bool isLocalCopyCreated = false;
-            string localParPath = Path.Combine(currentDir, "temp_chara_copy.par");
+            string localParPath = Path.Combine(currentDir, tempCopyName);
 
             try
             {
@@ -409,7 +483,7 @@ namespace ParTool
 
                 if (freeSpaceBytes >= requiredSpaceBytes)
                 {
-                    Console.WriteLine("Space check PASSED (>= 15 GB free). Copying chara.par locally for faster processing...");
+                    Console.WriteLine($"Space check PASSED (>= 15 GB free). Copying {expectedParName} locally for faster processing...");
                     Console.Write("Copying... ");
                     File.Copy(selectedParPath, localParPath, true);
                     Console.WriteLine("DONE!");
@@ -429,8 +503,8 @@ namespace ParTool
                 Console.ResetColor();
             }
 
-            // We compile it into ./output/chara.par
-            string outputPar = Path.Combine(currentDir, "output", "chara.par");
+            // We compile it into ./output/expectedParName
+            string outputPar = Path.Combine(currentDir, "output", expectedParName);
 
             // Setup options for compile
             var opts = new Options.GatherCompile
@@ -438,7 +512,8 @@ namespace ParTool
                 InputParArchivePath = parInputPath,
                 ModsDirectory = modsDir,
                 OutputParArchivePath = outputPar,
-                Compression = 0 // Disable compression (0 = uncompressed) for 100x faster compilation
+                Compression = 0, // Disable compression (0 = uncompressed) for 100x faster compilation
+                IsSoundMod = isSoundMod
             };
 
             try
@@ -483,11 +558,14 @@ namespace ParTool
             Console.ResetColor();
             Console.WriteLine(" 1. Go to your game directory:");
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            string gameParDir = Path.GetDirectoryName(selectedParPath);
+            string gameParDir = Path.GetDirectoryName(selectedParPath) ?? string.Empty;
             Console.WriteLine($"    {gameParDir}");
             Console.ResetColor();
-            Console.WriteLine(" 2. BACK UP the original 'chara.par' (e.g. rename it to 'chara_original.par').");
-            Console.WriteLine(" 3. Copy the newly compiled 'chara.par' from:");
+            
+            string parFileName = isSoundMod ? "vf5fs_data.par" : "chara.par";
+            string parBaseName = Path.GetFileNameWithoutExtension(parFileName);
+            Console.WriteLine($" 2. BACK UP the original '{parFileName}' (e.g. rename it to '{parBaseName}_original.par').");
+            Console.WriteLine($" 3. Copy the newly compiled '{parFileName}' from:");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"    {outputPar}");
             Console.ResetColor();
@@ -495,23 +573,50 @@ namespace ParTool
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine($"    {gameParDir}");
             Console.ResetColor();
+
+            string outputDir = Path.GetDirectoryName(outputPar) ?? string.Empty;
+            string authVoiceDir = Path.Combine(outputDir, "auth_voice");
+            if (isSoundMod && Directory.Exists(authVoiceDir) && Directory.GetFiles(authVoiceDir).Length > 0)
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("=================== [IMPORTANT INSTRUCTIONS FOR AUTH_VOICE] ===================");
+                Console.WriteLine("Some sound mod files were copied to the local output folder instead of the PAR:");
+                Console.WriteLine($" -> {authVoiceDir}");
+                Console.WriteLine();
+                Console.WriteLine("Please follow these steps to apply them to your game:");
+                Console.WriteLine("1. Create a BACKUP copy of your original 'auth_voice' folder located at:");
+                Console.WriteLine($@"   {Path.Combine(gameParDir, "vf5fs_media", "rom", "sound", "voice", "auth_voice")}");
+                Console.WriteLine("2. Copy all the files from the newly created folder:");
+                Console.WriteLine($"   {authVoiceDir}");
+                Console.WriteLine("3. Paste and overwrite them into the game's folder:");
+                Console.WriteLine($@"   {Path.Combine(gameParDir, "vf5fs_media", "rom", "sound", "voice", "auth_voice")}");
+                Console.WriteLine("================================================================================");
+                Console.ResetColor();
+            }
             Console.WriteLine();
             Console.WriteLine("--------------------------------------------------------------------------------");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey(true);
         }
 
-        private static string SelectCharaPar()
+        private static string SelectPar(string expectedName, string initialDir)
         {
             try
             {
                 // Run PowerShell to display file dialog
                 string script = "[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null; " +
                                 "$dialog = New-Object System.Windows.Forms.OpenFileDialog; " +
-                                "$dialog.Title = 'Select Original chara.par'; " +
-                                "$dialog.Filter = 'chara.par|chara.par|PAR files (*.par)|*.par|All files (*.*)|*.*'; " +
-                                "$dialog.FileName = 'chara.par'; " +
-                                "if ($dialog.ShowDialog() -eq 'OK') { Write-Output $dialog.FileName }";
+                                $"$dialog.Title = 'Select Original {expectedName}'; " +
+                                $"$dialog.Filter = '{expectedName}|{expectedName}|PAR files (*.par)|*.par|All files (*.*)|*.*'; " +
+                                $"$dialog.FileName = '{expectedName}'; ";
+                
+                if (!string.IsNullOrEmpty(initialDir))
+                {
+                    script += $"$dialog.InitialDirectory = '{initialDir}'; ";
+                }
+                
+                script += "if ($dialog.ShowDialog() -eq 'OK') { Write-Output $dialog.FileName }";
 
                 var startInfo = new System.Diagnostics.ProcessStartInfo
                 {
@@ -543,7 +648,7 @@ namespace ParTool
             Console.ResetColor();
             while (true)
             {
-                Console.Write("Enter absolute path to original 'chara.par': ");
+                Console.Write($"Enter absolute path to original '{expectedName}': ");
                 string input = Console.ReadLine()?.Trim();
                 if (string.IsNullOrEmpty(input))
                 {
@@ -734,9 +839,9 @@ namespace ParTool
         private static Node FindDestinationNode(Node root)
         {
             Node dest = root;
-            while (dest.Children.Count > 0 && dest.Children[0].Name == ".")
+            while (dest.Children != null && dest.Children["."] != null)
             {
-                dest = dest.Children[0];
+                dest = dest.Children["."];
             }
             return dest;
         }

@@ -35,5 +35,10 @@ namespace ParTool.Options
         /// </summary>
         [Option('c', "compression", Default = 0x00, HelpText = "SLLZ algorithm (0 = uncompressed, 1 = SLLZ).")]
         public int Compression { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether to compile as a sound mod (vf5fs_data.par) instead of character mods.
+        /// </summary>
+        [Option('s', "sound", Default = false, HelpText = "Compile as a sound mod (looks for 'rom' folder inside mods).")]
+        public bool IsSoundMod { get; set; }
     }
 }
