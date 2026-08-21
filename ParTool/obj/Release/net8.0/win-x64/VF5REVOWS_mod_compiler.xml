@@ -104,6 +104,16 @@
             Gets or sets a value indicating whether to compile as a sound mod (vf5fs_data.par) instead of character mods.
             </summary>
         </member>
+        <member name="P:ParTool.Options.GatherCompile.IsMasterSkinMod">
+            <summary>
+            Gets or sets a value indicating whether to compile as a Master Skin Mod (blanking items + applying master skins).
+            </summary>
+        </member>
+        <member name="P:ParTool.Options.GatherCompile.MasterSkinSuboption">
+            <summary>
+            Gets or sets the Master Skin suboption (1 = master_skins/compiled, 2 = master_skins/mods).
+            </summary>
+        </member>
         <member name="T:ParTool.Options.List">
             <summary>
             PAR archive list options.

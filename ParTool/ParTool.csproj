@@ -24,4 +24,11 @@
     <ProjectReference Include="..\pxdArchiver\ParManager\ParLibrary\ParLibrary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\vf5revows_dummy_gmds\*.gmd" Link="EmbeddedDummyGmds\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\yk_gmd_blender\**\*.py" Link="EmbeddedYkGmdBlender\%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="EmbeddedScanner\*.py" Link="EmbeddedScanner\%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
+

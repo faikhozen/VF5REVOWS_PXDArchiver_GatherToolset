@@ -40,5 +40,18 @@ namespace ParTool.Options
         /// </summary>
         [Option('s', "sound", Default = false, HelpText = "Compile as a sound mod (looks for 'rom' folder inside mods).")]
         public bool IsSoundMod { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to compile as a Master Skin Mod (blanking items + applying master skins).
+        /// </summary>
+        [Option("master-skin", Default = false, HelpText = "Compile as Master Skin Mod (blanking items + applying master skins).")]
+        public bool IsMasterSkinMod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Master Skin suboption (1 = master_skins/compiled, 2 = master_skins/mods).
+        /// </summary>
+        [Option("master-skin-suboption", Default = 1, HelpText = "Master Skin suboption mode: 1 = master_skins/compiled, 2 = master_skins/mods.")]
+        public int MasterSkinSuboption { get; set; } = 1;
     }
 }
+
