@@ -48,9 +48,15 @@ character_allowed_bones = {
 def match_character_code(path):
     path_upper = path.upper()
     codes = ['AKI', 'SAR', 'LAU', 'SHU', 'JEF', 'PAI', 'JAK', 'KAG', 'LIO', 'WOL', 'AOI', 'LEI', 'VAN', 'BRA', 'GOH', 'MON', 'MSK', 'KRT', 'TAK', 'TST', 'DUR']
-    for code in codes:
-        if f'_{code}_' in path_upper or f'_{code}.' in path_upper or f'_{code}\\' in path_upper or f'_{code}/' in path_upper or path_upper.endswith(f'_{code}'):
-            return code
+    parts = [p for p in path_upper.replace('/', '\\').split('\\') if p]
+    for part in parts:
+        for code in codes:
+            if f'_{code}_' in part or f'_{code}.' in part or part.endswith(f'_{code}') or part.startswith(f'{code}_'):
+                return code
+            if part.startswith(code):
+                rest = part[len(code):]
+                if not rest or not rest[0].isalpha():
+                    return code
     return None
 
 def scan_single_gmd(gmd_path):

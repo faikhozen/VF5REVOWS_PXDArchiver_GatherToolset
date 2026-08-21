@@ -36,15 +36,20 @@ graph TD
   3. **Suboption 3 (`Whitelisted Common Dummy Bones Guide`)**: Interactive guide listing all 118 Whitelisted Common Dummy Bones and rigging rules.
   4. **Suboption 4 (`Bone Weight Categorical Audit Report`)**: Scans all `.gmd` files across `master_skins/` directories and generates a comprehensive categorical audit report of vertex weights (allowed common dummy bones, allowed character physics bones, and non-common bones) logged to `./output/master_skin_bone_weight_audit_report.log`.
 - **Duplicate `.gmd` Validation**: Verifies that only ONE master skin `.gmd` model is present per character code. If multiple `.gmd` files exist for the same character, compilation aborts with detailed file conflict paths.
-- **Error Dump Log Generation**: Whenever duplicate character model conflicts or non-common bone weight errors occur, a full error dump log is automatically generated and saved to `./output/master_skin_error_dump.log` (or `master_skin_bone_error_dump.log`), and its exact location is prominently printed to the console output.
+- **Error Dump Log Generation & Non-Common Bone Weight Warning Prompt**: Whenever duplicate character model conflicts or non-common bone weight errors occur, a full error dump log is automatically generated and saved to `./output/master_skin_error_dump.log` (or `master_skin_bone_error_dump.log`). If non-common bone weights are detected, the user is warned about potential in-game visual mesh distortion and prompted to proceed (`1. Proceed anyway / 2. Abort compilation`).
 - **Chest Physics Test & Location Enforcement (Both Suboption 1 & 2)**:
   - Pre-scans `.gmd` models for female characters (`AOI` and `SAR`) for breast/chest physics weights (`j_0_munl_000wj`/`j_0_munr_000wj` for AOI, `j_opal_015wj`/`j_opar_014wj` for SAR).
   - **Folder Location Rules**:
     - Mods for `AOI` / `SAR` **WITH** breast/chest physics **MUST** be placed in `master_skins/special_chest_physics/`. If detected in standard `master_skins/compiled/` or `master_skins/mods/`, compilation aborts with instructions and dumps `master_skin_chest_physics_error_dump.log`.
     - Mods **WITHOUT** breast/chest physics (e.g. SAR `c_v64_VF5_SAR_TEK.gmd` or AOI `AOI003_JO_OUT_01.gmd`, `AOI023_JO_OUT_03.gmd`, `AOI033_JO_OUT_04.gmd`) remain in `master_skins/compiled/` (Suboption 1) or `master_skins/mods/` (Suboption 2) respectively.
-- **AOI Master Skin Base Exception**:
-  - `c_v10_VF5_AOI.gmd` is excluded from AOI master skin replacement.
-  - Approved AOI master skin models without chest physics (`AOI003_JO_OUT_01.gmd`, `AOI023_JO_OUT_03.gmd`, `AOI033_JO_OUT_04.gmd`) or with chest physics (`c_v8e_VF5_AOI_SWIM.gmd`, `c_v73_VF5_AOI_TEK.gmd`, `AOI013_JO_OUT_02.gmd`, `AOI343_JO_OUT_05.gmd`) replace `{targetFolder}.gmd` across AOI costume slots.
+- **AOI Special Item Virtual Path Mappings**:
+  - **Non-Chest Physics Item Mappings** (from `master_skins/mods/`):
+    - `AOI003_JO_OUT_01.gmd` → `vf5item/AOI/AOIITM003/AOI003_JO_OUT_01.gmd`
+    - `AOI023_JO_OUT_03.gmd` → `vf5item/AOI/AOIITM023/AOI023_JO_OUT_03.gmd`
+    - `AOI033_JO_OUT_04.gmd` → `vf5item/AOI/AOIITM033/AOI033_JO_OUT_04.gmd`
+  - **Chest Physics Item Mappings** (from `master_skins/special_chest_physics/`):
+    - `AOI013_JO_OUT_02.gmd` → `vf5item/AOI/AOIITM13/AOI013_JO_OUT_02.gmd` & `vf5item/AOI/AOIITM013/AOI013_JO_OUT_02.gmd`
+    - `AOI343_JO_OUT_05.gmd` → `vf5item/AOI/AOIITM343/AOI343_JO_OUT_05.gmd`
 - **Roster Validation:** Maps character codes to full character names (e.g., Akira Yuki for `AKI`, Sarah Bryant for `SAR`, etc.) and notifies the user of present vs. missing characters.
 - **Prompt:** User is prompted to proceed (`1. Yes / 2. No`).
 - **Omission Rule:** If MCC is incomplete, any missing character slots are **OMITTED** from the rest of the compilation pipeline (skipping Stage 1 GMD dummy blanking and Stage 2 master skin deployment for those character slots).

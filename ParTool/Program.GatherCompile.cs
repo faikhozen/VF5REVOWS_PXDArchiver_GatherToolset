@@ -112,7 +112,7 @@ namespace ParTool
             catch { }
         }
 
-        private static bool IsInSpecialChestPhysicsFolder(string filePath, string masterSkinsDir)
+        private static bool IsInSpecialChestPhysicsFolder(string filePath, string masterSkinsDir = null)
         {
             if (string.IsNullOrEmpty(filePath)) return false;
             string relPath = (!string.IsNullOrEmpty(masterSkinsDir) && filePath.StartsWith(masterSkinsDir, StringComparison.OrdinalIgnoreCase))
@@ -216,6 +216,23 @@ namespace ParTool
             catch { }
 
             return (invalidGmdsMap, allWeightedBonesMap);
+        }
+
+        private static bool IsAoiChestPhysicsFolder(string targetFolder)
+        {
+            return string.Equals(targetFolder, "c_v73_VF5_AOI_TEK", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(targetFolder, "c_v8e_VF5_AOI_SWIM", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(targetFolder, "c_v52_VF5_AOI_RYU", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static List<string> GetAoiTargetGmdFileNames(string targetFolder)
+        {
+            var list = new List<string>();
+            if (!string.Equals(targetFolder, "c_v10_VF5_AOI", StringComparison.OrdinalIgnoreCase))
+            {
+                list.Add($"{targetFolder}.gmd");
+            }
+            return list;
         }
 
         private static bool RunChestPhysicsTest(
@@ -915,8 +932,8 @@ namespace ParTool
                     }
                 }
 
-                // CHEST PHYSICS TEST FOR AOI & SAR (BOTH SUBOPTION 1 AND SUBOPTION 2)
-                var (_, scanAllWeightedMap) = masterSkinsDir != null && (Directory.Exists(masterSkinsDir) || File.Exists(masterSkinsDir))
+                // BONE WEIGHT CHECK & CHEST PHYSICS TEST FOR AOI & SAR (BOTH SUBOPTION 1 AND SUBOPTION 2)
+                var (scanInvalidMap, scanAllWeightedMap) = masterSkinsDir != null && (Directory.Exists(masterSkinsDir) || File.Exists(masterSkinsDir))
                     ? CheckAllMasterSkinNonCommonBones(masterSkinsDir)
                     : (new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase), new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase));
 
@@ -924,12 +941,116 @@ namespace ParTool
                 {
                     if (Directory.Exists(specialDir))
                     {
-                        var (_, extraWeightedMap) = CheckAllMasterSkinNonCommonBones(specialDir);
+                        var (extraInvalidMap, extraWeightedMap) = CheckAllMasterSkinNonCommonBones(specialDir);
+                        foreach (var kvp in extraInvalidMap)
+                        {
+                            scanInvalidMap[kvp.Key] = kvp.Value;
+                        }
                         foreach (var kvp in extraWeightedMap)
                         {
                             scanAllWeightedMap[kvp.Key] = kvp.Value;
                         }
                     }
+                }
+
+                if (scanInvalidMap.Count > 0)
+                {
+                    var dumpLogBuilder = new System.Text.StringBuilder();
+                    dumpLogBuilder.AppendLine("================================================================================");
+                    dumpLogBuilder.AppendLine("VF5REVOWS MOD COMPILATION - BONE WEIGHT WARNING DUMP LOG");
+                    dumpLogBuilder.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    dumpLogBuilder.AppendLine("================================================================ me\n");
+                    dumpLogBuilder.AppendLine($"Found {scanInvalidMap.Count} master skin .gmd file(s) with non-common bone weights:\n");
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("================================================================================");
+                    Console.WriteLine($"WARNING: NON-COMMON BONE WEIGHTS DETECTED IN {scanInvalidMap.Count} MASTER SKIN MODEL(S)");
+                    Console.WriteLine("================================================================================");
+                    Console.ResetColor();
+                    Console.WriteLine();
+
+                    foreach (var kvp in scanInvalidMap)
+                    {
+                        string gmdFile = kvp.Key;
+                        List<string> nonCommonBones = kvp.Value;
+                        string relPath = (masterSkinsDir != null && gmdFile.StartsWith(masterSkinsDir, StringComparison.OrdinalIgnoreCase))
+                            ? gmdFile.Substring(masterSkinsDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                            : Path.GetFileName(gmdFile);
+
+                        Console.WriteLine("--------------------------------------------------------------------------------");
+                        Console.WriteLine($"Master Skin GMD: {relPath} ({nonCommonBones.Count} non-common weighted bones)");
+                        Console.WriteLine("--------------------------------------------------------------------------------");
+                        dumpLogBuilder.AppendLine("--------------------------------------------------------------------------------");
+                        dumpLogBuilder.AppendLine($"Master Skin GMD: {relPath} ({nonCommonBones.Count} non-common weighted bones)");
+                        dumpLogBuilder.AppendLine("--------------------------------------------------------------------------------");
+
+                        foreach (string ncb in nonCommonBones)
+                        {
+                            Console.WriteLine($"  - {ncb}");
+                            dumpLogBuilder.AppendLine($"  - {ncb}");
+                        }
+                        Console.WriteLine();
+                        dumpLogBuilder.AppendLine();
+                    }
+
+                    string errOverview1 = "================================================================================";
+                    string errOverview2 = "NOTICE: Master skin mods default to basic common dummy armatures.";
+                    string errOverview3 = "Files with weights on non-common bones (such as hair, cape, skirt, or coat physics)";
+                    string errOverview4 = "WILL distort or experience visual mesh glitches in-game when loaded on dummy armatures.";
+                    string errOverview5 = "================================================================================";
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(errOverview1);
+                    Console.WriteLine(errOverview2);
+                    Console.WriteLine(errOverview3);
+                    Console.WriteLine(errOverview4);
+                    Console.WriteLine(errOverview5);
+                    Console.ResetColor();
+
+                    dumpLogBuilder.AppendLine(errOverview1);
+                    dumpLogBuilder.AppendLine(errOverview2);
+                    dumpLogBuilder.AppendLine(errOverview3);
+                    dumpLogBuilder.AppendLine(errOverview4);
+                    dumpLogBuilder.AppendLine(errOverview5);
+
+                    string dumpPath = SaveErrorDumpLog(dumpLogBuilder.ToString(), "master_skin_bone_error_dump.log");
+
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("================================================================================");
+                    Console.WriteLine("[INFO] Complete bone weight diagnostic log has been saved to:");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"  {dumpPath}");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("================================================================================");
+                    Console.ResetColor();
+
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("================================================================================");
+                    Console.WriteLine("PROMPT: NON-COMMON BONE WEIGHTS DETECTED - WOULD YOU LIKE TO PROCEED?");
+                    Console.WriteLine("================================================================================");
+                    Console.ResetColor();
+                    Console.WriteLine("1. Proceed anyway (understand visual problems / mesh distortion may occur in-game)");
+                    Console.WriteLine("2. Abort compilation and exit (recommended so you can review/fix bone weights first)");
+                    Console.Write("\nChoice [1/2] (or Y/N, default=2): ");
+
+                    string boneChoice = Console.ReadLine()?.Trim();
+                    bool userProceeds = !string.IsNullOrEmpty(boneChoice) &&
+                        (boneChoice == "1" || boneChoice.StartsWith("y", StringComparison.OrdinalIgnoreCase) || boneChoice.StartsWith("Y", StringComparison.OrdinalIgnoreCase));
+
+                    if (!userProceeds)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("\nCompilation cancelled by user to review bone weights.");
+                        Console.ResetColor();
+                        return false;
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("\n[WARNING] Proceeding with compilation despite non-common bone weights. Visual glitches may occur.");
+                    Console.ResetColor();
+                    Console.WriteLine();
                 }
 
                 if (!RunChestPhysicsTest(opts.MasterSkinSuboption, masterSkinsDir, charToGmdFiles, scanAllWeightedMap))
@@ -1072,105 +1193,15 @@ namespace ParTool
                 }
 
                 int masterSkinsDeployed = 0;
-
-                // Weight checking on all active master skin .gmd files
-                Console.WriteLine("[STAGE 2] Pre-scanning all master skin .gmd files for bone weight compatibility...");
-                var (rawInvalidMap, _) = masterSkinsDir != null && (Directory.Exists(masterSkinsDir) || File.Exists(masterSkinsDir))
-                    ? CheckAllMasterSkinNonCommonBones(masterSkinsDir)
-                    : (new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase), new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase));
-
-                var invalidGmdsMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-                foreach (var kvp in rawInvalidMap)
-                {
-                    string charCode = MatchCharacterCode(kvp.Key);
-                    if (!string.IsNullOrEmpty(charCode) && activeCharCodes.Contains(charCode))
-                    {
-                        invalidGmdsMap[kvp.Key] = kvp.Value;
-                    }
-                }
-
-                if (invalidGmdsMap.Count > 0)
-                {
-                    var dumpLogBuilder = new System.Text.StringBuilder();
-                    dumpLogBuilder.AppendLine("================================================================================");
-                    dumpLogBuilder.AppendLine("VF5REVOWS MOD COMPILATION - BONE WEIGHT ERROR DUMP LOG");
-                    dumpLogBuilder.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                    dumpLogBuilder.AppendLine("================================================================ me\n");
-                    dumpLogBuilder.AppendLine($"Found {invalidGmdsMap.Count} master skin .gmd file(s) with non-common bone weights:\n");
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"\n[ERROR] Found {invalidGmdsMap.Count} master skin .gmd file(s) with non-common bone weights:\n");
-
-                    foreach (var kvp in invalidGmdsMap)
-                    {
-                        string gmdFile = kvp.Key;
-                        List<string> nonCommonBones = kvp.Value;
-                        string relPath = (masterSkinsDir != null && gmdFile.StartsWith(masterSkinsDir, StringComparison.OrdinalIgnoreCase))
-                            ? gmdFile.Substring(masterSkinsDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                            : Path.GetFileName(gmdFile);
-
-                        Console.WriteLine($"--------------------------------------------------------------------------------");
-                        Console.WriteLine($"Master Skin GMD: {relPath} ({nonCommonBones.Count} non-common weighted bones)");
-                        Console.WriteLine($"--------------------------------------------------------------------------------");
-                        dumpLogBuilder.AppendLine($"--------------------------------------------------------------------------------");
-                        dumpLogBuilder.AppendLine($"Master Skin GMD: {relPath} ({nonCommonBones.Count} non-common weighted bones)");
-                        dumpLogBuilder.AppendLine($"--------------------------------------------------------------------------------");
-
-                        foreach (string ncb in nonCommonBones)
-                        {
-                            Console.WriteLine($"  - {ncb}");
-                            dumpLogBuilder.AppendLine($"  - {ncb}");
-                        }
-                        Console.WriteLine();
-                        dumpLogBuilder.AppendLine();
-                    }
-
-                    string errOverview1 = "================================================================================";
-                    string errOverview2 = "ERROR: Master skin mods use basic dummy armatures for cross-slot replacement.";
-                    string errOverview3 = "Files with weights on non-common bones (such as hair or coat physics) will distort or crash in-game when loaded on dummy armatures.";
-                    string errOverview4 = "Please fix the master skin model(s) listed above and try again.";
-                    string errOverview5 = "================================================================================";
-
-                    Console.WriteLine(errOverview1);
-                    Console.WriteLine(errOverview2);
-                    Console.WriteLine(errOverview3);
-                    Console.WriteLine(errOverview4);
-                    Console.WriteLine(errOverview5);
-                    Console.ResetColor();
-
-                    dumpLogBuilder.AppendLine(errOverview1);
-                    dumpLogBuilder.AppendLine(errOverview2);
-                    dumpLogBuilder.AppendLine(errOverview3);
-                    dumpLogBuilder.AppendLine(errOverview4);
-                    dumpLogBuilder.AppendLine(errOverview5);
-
-                    string dumpPath = SaveErrorDumpLog(dumpLogBuilder.ToString(), "master_skin_bone_error_dump.log");
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("\nCompilation aborted due to non-common bone weights error.");
-                    Console.ResetColor();
-
-                    Console.WriteLine();
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("================================================================================");
-                    Console.WriteLine("[INFO] Complete error dump log has been generated and saved to:");
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"  {dumpPath}");
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("================================================================================");
-                    Console.ResetColor();
-
-                    Console.WriteLine("\nPress any key to exit...");
-                    Console.ReadKey(true);
-                    return false;
-                }
-
                 foreach (var kvp in charToMasterFiles)
                 {
                     string charCode = kvp.Key;
                     if (!activeCharCodes.Contains(charCode)) continue; // OMIT missing character
 
                     List<string> sourceFiles = kvp.Value;
+
+                    bool hasSarChestPhysicsSource = sourceFiles.Exists(f => string.Equals(charCode, "SAR", StringComparison.OrdinalIgnoreCase) && IsInSpecialChestPhysicsFolder(f, masterSkinsDir));
+                    bool hasAoiChestPhysicsSource = sourceFiles.Exists(f => string.Equals(charCode, "AOI", StringComparison.OrdinalIgnoreCase) && IsInSpecialChestPhysicsFolder(f, masterSkinsDir));
 
                     // 1. Deploy to all whitelisted costume folders for this character
                     foreach (string targetFolder in WhitelistedCostumeFolders)
@@ -1180,39 +1211,129 @@ namespace ParTool
                             foreach (string srcFile in sourceFiles)
                             {
                                 string ext = Path.GetExtension(srcFile);
-                                string srcNameNoExt = Path.GetFileNameWithoutExtension(srcFile);
-                                string vdirName = Path.GetFileName(Path.GetDirectoryName(srcFile));
+                                string fileName = Path.GetFileName(srcFile);
+                                string parentDirName = Path.GetFileName(Path.GetDirectoryName(srcFile));
 
-                                // Special case for AOI: do not use c_v10_VF5_AOI.gmd for master skin
+                                // Special case for AOI base exclusion: do not use c_v10_VF5_AOI.gmd for master skin
                                 if (string.Equals(charCode, "AOI", StringComparison.OrdinalIgnoreCase) &&
-                                    string.Equals(Path.GetFileName(srcFile), "c_v10_VF5_AOI.gmd", StringComparison.OrdinalIgnoreCase))
+                                    string.Equals(fileName, "c_v10_VF5_AOI.gmd", StringComparison.OrdinalIgnoreCase))
                                 {
                                     continue;
                                 }
 
-                                string targetFileName;
-                                if (string.Equals(charCode, "AOI", StringComparison.OrdinalIgnoreCase) ||
-                                    string.Equals(srcNameNoExt, vdirName, StringComparison.OrdinalIgnoreCase))
+                                bool isChestPhysicsSrc = IsInSpecialChestPhysicsFolder(srcFile, masterSkinsDir);
+
+                                // --- SAR DEPLOYMENT RULES ---
+                                if (string.Equals(charCode, "SAR", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    targetFileName = $"{targetFolder}{ext}";
+                                    bool isTekSlot = string.Equals(targetFolder, "c_v64_VF5_SAR_TEK", StringComparison.OrdinalIgnoreCase);
+
+                                    if (isTekSlot)
+                                    {
+                                        // c_v64_VF5_SAR_TEK prefers chest physics model if present
+                                        if (hasSarChestPhysicsSource && !isChestPhysicsSrc)
+                                        {
+                                            continue; // Skip non-chest physics model for TEK slot when chest physics model is present
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Other SAR slots MUST NOT use chest physics model
+                                        if (isChestPhysicsSrc)
+                                        {
+                                            continue; // Skip chest physics model for non-TEK slots
+                                        }
+                                    }
                                 }
-                                else
+
+                                // --- AOI DEPLOYMENT RULES ---
+                                if (string.Equals(charCode, "AOI", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    string suffix = srcNameNoExt.StartsWith(vdirName, StringComparison.OrdinalIgnoreCase)
-                                        ? srcNameNoExt.Substring(vdirName.Length)
-                                        : $"_{srcNameNoExt}";
-                                    targetFileName = $"{targetFolder}{suffix}{ext}";
+                                    bool isChestTargetFolder = IsAoiChestPhysicsFolder(targetFolder);
+                                    if (isChestTargetFolder)
+                                    {
+                                        // Target slot HAS chest physics (c_v73_VF5_AOI_TEK, c_v8e_VF5_AOI_SWIM, c_v52_VF5_AOI_RYU)
+                                        if (hasAoiChestPhysicsSource && !isChestPhysicsSrc)
+                                        {
+                                            continue; // Skip non-chest physics model when chest physics model is available
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Target slot DOES NOT HAVE chest physics (c_v10_VF5_AOI, c_v31_VF5_AOI_VF1, c_v31_VF5_AOI_VF1_2)
+                                        if (isChestPhysicsSrc)
+                                        {
+                                            continue; // Skip chest physics model for non-chest slots
+                                        }
+                                    }
+
+                                    List<string> targetFileNames = GetAoiTargetGmdFileNames(targetFolder);
+                                    foreach (string tfn in targetFileNames)
+                                    {
+                                        string aoiVirtualPath = $"tops/{targetFolder}/{tfn}";
+                                        filesToOverlay.Add((srcFile, aoiVirtualPath));
+                                        masterSkinsDeployed++;
+                                        Console.WriteLine($"[STAGE 2] Master skin '{parentDirName}/{fileName}' -> {aoiVirtualPath}");
+                                    }
+                                    continue;
                                 }
+
+                                string targetFileName = ext.Equals(".gmd", StringComparison.OrdinalIgnoreCase)
+                                    ? $"{targetFolder}.gmd"
+                                    : fileName;
 
                                 string targetVirtualPath = $"tops/{targetFolder}/{targetFileName}";
                                 filesToOverlay.Add((srcFile, targetVirtualPath));
                                 masterSkinsDeployed++;
-                                Console.WriteLine($"[STAGE 2] Master skin '{vdirName}/{Path.GetFileName(srcFile)}' -> {targetVirtualPath}");
+                                Console.WriteLine($"[STAGE 2] Master skin '{parentDirName}/{fileName}' -> {targetVirtualPath}");
                             }
                         }
                     }
 
-                    // 2. Deploy master skin .gmd files to special item whitelist overrides for this character
+                    // 2. Deploy master skin .gmd files to AOI special item overrides
+                    if (string.Equals(charCode, "AOI", StringComparison.OrdinalIgnoreCase))
+                    {
+                        foreach (var itemMapping in AoiSpecialItemMappings)
+                        {
+                            foreach (string srcFile in sourceFiles)
+                            {
+                                if (!Path.GetExtension(srcFile).Equals(".gmd", StringComparison.OrdinalIgnoreCase)) continue;
+
+                                string srcFileName = Path.GetFileName(srcFile);
+                                bool isChestPhysicsSrc = IsInSpecialChestPhysicsFolder(srcFile, masterSkinsDir);
+
+                                if (string.Equals(srcFileName, itemMapping.SpecificFileName, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    filesToOverlay.Add((srcFile, itemMapping.VirtualPath));
+                                    masterSkinsDeployed++;
+                                    Console.WriteLine($"[STAGE 2] AOI Item Specific Override: '{srcFileName}' -> {itemMapping.VirtualPath}");
+                                }
+                                else
+                                {
+                                    if (itemMapping.RequiresChestPhysics)
+                                    {
+                                        if (isChestPhysicsSrc)
+                                        {
+                                            filesToOverlay.Add((srcFile, itemMapping.VirtualPath));
+                                            masterSkinsDeployed++;
+                                            Console.WriteLine($"[STAGE 2] AOI Item Chest Physics Override: '{srcFileName}' -> {itemMapping.VirtualPath}");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!isChestPhysicsSrc)
+                                        {
+                                            filesToOverlay.Add((srcFile, itemMapping.VirtualPath));
+                                            masterSkinsDeployed++;
+                                            Console.WriteLine($"[STAGE 2] AOI Item Non-Chest Physics Override: '{srcFileName}' -> {itemMapping.VirtualPath}");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. Deploy master skin .gmd files to special item whitelist overrides for this character
                     foreach (var special in SpecialItemMappings)
                     {
                         if (string.Equals(special.CharCode, charCode, StringComparison.OrdinalIgnoreCase))
@@ -2444,6 +2565,16 @@ COMPLETE LIST OF {WhitelistedCommonBones.Count} COMMON DUMMY BONES (ALPHABETICAL
             ("GOH", "vf5item/GOH/GOHITM416/GOH416_AT_MASK_01.gmd")
         };
 
+        private static readonly (string CharCode, string VirtualPath, bool RequiresChestPhysics, string SpecificFileName)[] AoiSpecialItemMappings = new[]
+        {
+            ("AOI", "vf5item/AOI/AOIITM003/AOI003_JO_OUT_01.gmd", false, "AOI003_JO_OUT_01.gmd"),
+            ("AOI", "vf5item/AOI/AOIITM023/AOI023_JO_OUT_03.gmd", false, "AOI023_JO_OUT_03.gmd"),
+            ("AOI", "vf5item/AOI/AOIITM033/AOI033_JO_OUT_04.gmd", false, "AOI033_JO_OUT_04.gmd"),
+            ("AOI", "vf5item/AOI/AOIITM13/AOI013_JO_OUT_02.gmd", true, "AOI013_JO_OUT_02.gmd"),
+            ("AOI", "vf5item/AOI/AOIITM013/AOI013_JO_OUT_02.gmd", true, "AOI013_JO_OUT_02.gmd"),
+            ("AOI", "vf5item/AOI/AOIITM343/AOI343_JO_OUT_05.gmd", true, "AOI343_JO_OUT_05.gmd")
+        };
+
         private static string ExtractEmbeddedDummyGmdsToTemp()
         {
             try
@@ -2589,6 +2720,14 @@ COMPLETE LIST OF {WhitelistedCommonBones.Count} COMMON DUMMY BONES (ALPHABETICAL
                     if (upper.Contains($"_{cUpper}_") || upper.EndsWith($"_{cUpper}") || upper.StartsWith($"{cUpper}_") || upper == cUpper)
                     {
                         return code;
+                    }
+                    if (upper.StartsWith(cUpper))
+                    {
+                        string rest = upper.Substring(cUpper.Length);
+                        if (string.IsNullOrEmpty(rest) || !char.IsLetter(rest[0]))
+                        {
+                            return code;
+                        }
                     }
                 }
             }
